@@ -1,0 +1,26 @@
+<div class="container-custom">
+  <div class="separator-custom"></div>
+  <div class="content-custom">
+    <div class="banner-custom">
+      <mat-grid-list cols="4" rowHeight="45px">
+        <mat-grid-tile class="title-one-custom" [colspan]="4">
+          <div class="mat-h5 title-one-text-custom">
+            COPA
+          </div>
+        </mat-grid-tile>
+        <mat-grid-tile class="title-two-custom" [colspan]="4">
+          <div class="mat-h1 title-two-text-custom">
+            {{stepCup}}
+            <div class="spacing-custom"></div>
+            <div class="trace-custom"></div>
+          </div>
+        </mat-grid-tile>
+        <mat-grid-tile class="title-three-custom" [colspan]="4">
+          {{msgBanner}}
+        </mat-grid-tile>
+      </mat-grid-list>
+    </div>
+  </div>
+  <router-outlet></router-outlet>
+  <div class="separator-custom"></div>
+</div>

@@ -1,0 +1,31 @@
+<div class="banner-custom">
+  <mat-grid-list cols="4" rowHeight="30px">
+    <mat-grid-tile [rowspan]="3" [colspan]="4">
+      <div class="selects-custom">
+        <span class="text-white-custom">Selecionados</span><br/>
+        <span class="text-white-custom">{{selecteds}} de 8 equipes</span>
+      </div>
+      <div class="button-gen-custom">
+        <button mat-button class="btn-gen-custom" (click)="onGenClick()" >GERAR COPA</button>
+      </div>
+    </mat-grid-tile>
+    <mat-grid-tile [rowspan]="4" *ngFor="let team of teams; let i=index">
+      <mat-card class="card-content-custom">
+        <div class="left-region-custom">
+          <div class="check-custom">
+            <mat-checkbox
+              [checked]="team.checked"
+              name="{{i}}-name"
+              (change)="onChangeState($event, i)"
+              >
+            </mat-checkbox>
+          </div>
+        </div>
+        <div class="team-info-custom">
+          <div class="team-name-custom">{{team.name}}</div>
+          <div class="team-inits-custom">{{team.initials}}</div>
+        </div>
+      </mat-card>
+    </mat-grid-tile>
+  </mat-grid-list>
+</div>
