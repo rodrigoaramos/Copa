@@ -17,6 +17,9 @@ namespace Corporate.Back.Copa.API.Controllers
     [Route("[controller]")]
     public class TeamsCupController : ControllerBase
     {
+        /// <summary>
+        /// Default service
+        /// </summary>
         [HttpGet("index")]
         public async Task<IActionResult> Get()
         {

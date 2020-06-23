@@ -36,7 +36,7 @@ namespace Corporate.Back.Copa.Api.Business.Services
                 message = "Has more of eight (8) teams in cup game!";
                 return false;
             }
-            /** !th round */
+            /** 1th round */
             List<Match> lsWinners = new List<Match>();
             List<Match> lsMatchs = teams.Select(t => new Match() { Team = t, NormName = Normalize(t.Name) }).ToList();
             lsMatchs.Sort(new Comparison<Match>((m1, m2) => m1.NormName.CompareTo(m2.NormName)));
@@ -151,7 +151,6 @@ namespace Corporate.Back.Copa.Api.Business.Services
                 lswinners.Add(winner);
             }
         }
-
     }
 
     internal class Match

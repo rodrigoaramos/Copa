@@ -7,6 +7,9 @@ namespace Corporate.Back.Copa.Api.Client.TO
 {
     public class TeamsTO
     {
+        /// <summary>
+        /// List of teams
+        /// </summary>
         public Team[] Teams { get; set; }
     }
 }
