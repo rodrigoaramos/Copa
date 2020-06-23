@@ -26,28 +26,45 @@ namespace Corporate.Back.Copa.Api.Business.Services
             {
                 return false;
             }
-            /** 1th round */
-            List<Team> lsWinners = new List<Team>();
-            List<Team> lsTeams = teams.ToList();
-            lsTeams.Sort(new Comparison<Team>((t1, t2) => t1.Name.CompareTo(t2.Name)));
-            while (true)
+            if (teams == null || teams.Length == 0)
             {
-                CheckGameRound(lsTeams, ref lsWinners);
-                if (lsWinners.Count <= 2)
-                {
-                    break;
-                }
-                lsTeams.Clear();
-                lsTeams.AddRange(lsWinners);
-                lsWinners.Clear();
+                message = "No has teams to matches!";
+                return false;
             }
-            if (lsWinners.Count == 2)
+            if (teams.Length > 8)
             {
-                Team winner1 = lsWinners[0];
-                Team winner2 = lsWinners[1];
-                Debug.WriteLine($"----------------> First  Winner #1: { winner1.Name }");
-                Debug.WriteLine($"----------------> Second Winner #2: { winner2.Name }");
+                message = "Has more of eight (8) teams in cup game!";
+                return false;
             }
+            /** !th round */
+            List<Match> lsWinners = new List<Match>();
+            List<Match> lsMatchs = teams.Select(t => new Match() { Team = t, NormName = Normalize(t.Name) }).ToList();
+            lsMatchs.Sort(new Comparison<Match>((m1, m2) => m1.NormName.CompareTo(m2.NormName)));
+            CheckInitialRound(lsMatchs, ref lsWinners);
+            lsMatchs.Clear();
+            lsMatchs.AddRange(lsWinners);
+            lsWinners.Clear();
+            /** Semifinal round */
+            CheckSemifinalRound(lsMatchs, ref lsWinners);
+            if (lsWinners.Count != 2)
+            {
+                message = "Has more or less of eight (8) teams in cup game!";
+                return false;
+            }
+            /** Final round */
+            Match winner;
+            Match player1 = lsWinners[0];
+            Match player2 = lsWinners[1];
+            if (player1.Goals == player2.Goals)
+            {
+                winner = (player1.NormName.CompareTo(player2.NormName) < 0 ? player1 : player2);
+            }
+            else
+            {
+                winner = (player1.Goals > player2.Goals ? player1 : player2);
+            }
+            firstWinner = winner.Team;
+            secondWinner = (winner.Team.Id == player1.Team.Id ? player2.Team : player1.Team);
             return true;
         }
 
@@ -65,20 +82,42 @@ namespace Corporate.Back.Copa.Api.Business.Services
             return (teams.Length == distTeams.Count);
         }
 
+        private char[] tokens = new char[] { ' ', '_', '-', '/', '|' };
+
         /// <summary>
-        /// Check game round of teams
+        /// Normalize name of team
         /// </summary>
-        private void CheckGameRound(List<Team> lsteams, ref List<Team> lswinners)
+        private string Normalize(string name)
         {
-            Team winner;
-            int len = (int)Math.Floor((decimal)(lsteams.Count / 2));
+            string sentence = "";
+            string[] parts = name.Split(new char[] { ' ' });
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (Int32.TryParse(parts[i], out int number))
+                {
+                    sentence += (!string.IsNullOrWhiteSpace(sentence) ? " " : "") + "".PadLeft(30 - number.ToString().Length, '0') + number.ToString();
+                    continue;
+                }
+                sentence += (!string.IsNullOrWhiteSpace(sentence) ? " " : "") + (parts[i].Length > 30 ? parts[i].Substring(0, 30) : parts[i] + "".PadRight(30 - parts[i].Length, ' '));
+            }
+            return sentence;
+        }
+
+        /// <summary>
+        /// Check game round of teams in initial round
+        /// </summary>
+        private void CheckInitialRound(List<Match> lsmatchs, ref List<Match> lswinners)
+        {
+            Match winner;
+            int cnt = lsmatchs.Count;
+            int len = (int)Math.Floor((decimal)(cnt / 2));
             for (int i = 0; i < len; i++)
             {
-                Team player1 = lsteams[i];
-                Team player2 = lsteams[lsteams.Count - i];
+                Match player1 = lsmatchs[i];
+                Match player2 = lsmatchs[cnt - (i +1)];
                 if (player1.Goals == player2.Goals)
                 {
-                    winner = NormalizeAndTestNames(player1, player2);
+                    winner = (player1.NormName.CompareTo(player2.NormName) < 0 ? player1 : player2);
                 }
                 else
                 {
@@ -89,58 +128,36 @@ namespace Corporate.Back.Copa.Api.Business.Services
         }
 
         /// <summary>
-        /// Normalize names of teams and compare
+        /// Check game round of teams in semifinal round
         /// </summary>
-        private Team NormalizeAndTestNames(Team player1, Team player2)
+        private void CheckSemifinalRound(List<Match> lsmatchs, ref List<Match> lswinners)
         {
-            char[] tokens = new char[] { ' ', '_', '-', '/', '|' };
-            string name1 = player1.Name;
-            string name2 = player2.Name;
-            string[] parts1 = name1.Split(tokens);
-            string[] parts2 = name2.Split(tokens);
-            string sentence = "";
-            if (parts1.Length == parts2.Length)
+            Match winner;
+            Match player1 = null, player2 = null;
+            int len = lsmatchs.Count;
+            for (int i = 0; i <= len; i+=2)
             {
-                for (int i = 0; i < parts1.Length; i++)
+                if (i == 0) continue;
+                player1 = lsmatchs[i - 2];
+                player2 = lsmatchs[i - 1];
+                if (player1.Goals == player2.Goals)
                 {
-                    if (Int32.TryParse(parts1[i], out int number1))
-                    {
-                        if (Int32.TryParse(parts2[i], out int number2))
-                        {
-                            sentence += (!string.IsNullOrWhiteSpace(sentence) ? " " : "") + (number1 > number2 ? parts1[i] : parts2[i]);
-                            continue;
-                        }
-                    }
-                    if (parts1[i] == parts1[2])
-                    {
-                        sentence += (!string.IsNullOrWhiteSpace(sentence) ? " " : "") + parts1[i];
-                    }
-                    else
-                    {
-                        sentence += (!string.IsNullOrWhiteSpace(sentence) ? " " : "") + (parts1[i].CompareTo(parts2[i]) < 0 ? parts1[i] : parts2[i]);
-                    }
+                    winner = (player1.NormName.CompareTo(player2.NormName) < 0 ? player1 : player2);
                 }
+                else
+                {
+                    winner = (player1.Goals > player2.Goals ? player1 : player2);
+                }
+                lswinners.Add(winner);
             }
-            else
-            {
-                sentence = (name1.CompareTo(name2) < 0 ? name1 : name2);
-            }
-            name1 = ConvertCharactersTokens(name1, tokens);
-            name2 = ConvertCharactersTokens(name2, tokens);
-            return (sentence == name1 ? player1 : (sentence == name2 ? player2 : player1));
         }
 
-        /// <summary>
-        /// Convert tokens characters of name
-        /// </summary>
-        private string ConvertCharactersTokens(string text, char[] tokens)
-        {
-            string sentence = "";
-            for (int i = 0; i < tokens.Length; i++)
-            {
-                sentence = text.Replace(tokens[i], ' ');
-            }
-            return sentence;
-        }
+    }
+
+    internal class Match
+    {
+        public string NormName { get; set; } = "";
+        public int Goals { get => Team.Goals; }
+        public Team Team { get; set; }
     }
 }

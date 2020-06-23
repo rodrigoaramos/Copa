@@ -4,7 +4,8 @@ export const Localization: any = {
     teamcup: {
       txt11: 'Fechar',
       msg100: 'Selecione apenas 8 equipes para compor a copa.',
-      msg101: 'É preciso selecionar 8 equipes para então gerar a copa.'
+      msg101: 'É preciso selecionar 8 equipes para então gerar a copa.',
+      msg102: 'Ocorreu um erro na geração da Copa: '
     }
   }
 };

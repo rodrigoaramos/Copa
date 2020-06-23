@@ -74,14 +74,19 @@ export class TeamsComponent implements OnInit {
     const selecteds = this.teams.filter(x => x.checked);
     this.service.doGamming(selecteds)
       .subscribe((transp: CupResultTransport) => {
-        console.log('---------> First: ' + transp.first.id);
-        this.router.navigate(['/final', { first: transp.first.name, second: transp.second.name }]);
+        if (!transp.error) {
+          this.router.navigate(['/final', { first: transp.first.name, second: transp.second.name }]);
+        }
+        else {
+          this.showSnackBar(messages.teamcup.msg102 + transp.msgError, messages.teamcup.txt11);
+        }
       });
   }
 
   onGenClick(): void {
     if (this.selecteds !== MAX_TEAMS) {
       this.showSnackBar(messages.teamcup.msg101, messages.teamcup.txt11);
+      return;
     }
     this.startGames();
   }
